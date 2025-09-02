@@ -8,16 +8,11 @@ from scipy.sparse import hstack
 import re
 
 # --- NLTK Downloads (required for first run) ---
-# This will download the necessary data if not already present.
-try:
-    nltk.data.find('corpora/stopwords')
-except:
-    nltk.download('stopwords')
-
-try:
-    nltk.data.find('tokenizers/punkt')
-except:
-    nltk.download('punkt')
+# This ensures that the necessary data is downloaded in the Streamlit Cloud environment.
+# It only runs once when the app is first deployed or when a new version is pushed.
+with st.spinner('Downloading necessary data...'):
+    nltk.download('stopwords', quiet=True)
+    nltk.download('punkt', quiet=True)
 
 ps = PorterStemmer()
 
@@ -47,13 +42,19 @@ def transform_text(text):
     return " ".join(y)
 
 
-try:
-    tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
-    model = pickle.load(open('model.pkl', 'rb'))
-    scaler = pickle.load(open('scaler.pkl', 'rb'))
-except FileNotFoundError:
-    st.error("Model, vectorizer, or scaler files not found. Please run the Jupyter notebook first.")
-    st.stop()
+@st.cache_resource
+def load_models():
+    try:
+        tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
+        model = pickle.load(open('model.pkl', 'rb'))
+        scaler = pickle.load(open('scaler.pkl', 'rb'))
+        return tfidf, model, scaler
+    except FileNotFoundError:
+        st.error("Model, vectorizer, or scaler files not found. Please run the Jupyter notebook first.")
+        st.stop()
+
+
+tfidf, model, scaler = load_models()
 
 st.title("Email/SMS Spam Classifier")
 

@@ -1,0 +1,10 @@
+This file tells Git which files and folders to ignore.
+The virtual environment folder
+.venv/
+
+Python-specific files and folders
+pycache/
+*.pyc
+
+Operating System files
+.DS_Store
