@@ -4,6 +4,8 @@ import string
 from nltk.corpus import stopwords
 import nltk
 from nltk.stem.porter import PorterStemmer
+from scipy.sparse import hstack
+import re
 
 # Set page configuration for a wider, cleaner layout
 st.set_page_config(
@@ -15,18 +17,18 @@ st.set_page_config(
 
 
 # Load resources with caching for performance
-# This decorator ensures the models are only loaded once,
-# which is crucial for a fast app on Streamlit Cloud.
 @st.cache_resource
 def load_models():
-    """Loads and caches the model and vectorizer from pickle files."""
+    """Loads and caches the models and scaler from pickle files."""
     try:
         tfidf_model = pickle.load(open('vectorizer.pkl', 'rb'))
         spam_model = pickle.load(open('model.pkl', 'rb'))
-        return tfidf_model, spam_model
+        scaler_model = pickle.load(open('scaler.pkl', 'rb'))
+        return tfidf_model, spam_model, scaler_model
     except FileNotFoundError:
-        st.error("Model files not found. Please ensure 'vectorizer.pkl' and 'model.pkl' are in the same directory.")
-        return None, None
+        st.error(
+            "Model files not found. Please ensure 'vectorizer.pkl', 'model.pkl', and 'scaler.pkl' are in the same directory.")
+        return None, None, None
 
 
 @st.cache_resource
@@ -80,24 +82,31 @@ st.divider()
 
 # Load models and NLTK data
 download_nltk_data()
-tfidf, model = load_models()
+tfidf, model, scaler = load_models()
 
-if tfidf and model:
+if tfidf and model and scaler:
     input_sms = st.text_area("Enter the message here:", height=150)
 
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        if st.button('Predict'):
+    if st.button('Predict'):
+        if input_sms:
             # 1. Preprocess the text
             transformed_sms = transform_text(input_sms)
 
             # 2. Vectorize the text
             vector_input = tfidf.transform([transformed_sms])
 
-            # 3. Predict the result
-            prediction = model.predict(vector_input)[0]
+            # 3. Create and scale the new numerical feature
+            num_characters = len(re.sub(r'[^a-zA-Z0-9]', '', input_sms))
+            numerical_features = [[num_characters]]
+            numerical_features_scaled = scaler.transform(numerical_features)
 
-            # 4. Display the result with improved styling
+            # 4. Combine vectorized text with the new feature
+            combined_input = hstack([vector_input, numerical_features_scaled])
+
+            # 5. Predict the result
+            prediction = model.predict(combined_input.toarray())[0]
+
+            # 6. Display the result with improved styling
             st.divider()
             if prediction == 1:
                 st.markdown(
@@ -110,7 +119,9 @@ if tfidf and model:
                     "<h2 style='color:green; text-align:center;'>Not Spam 😊</h2>",
                     unsafe_allow_html=True
                 )
+        else:
+            st.warning("Please enter a message to classify.")
 
 # Display a success message after all the initial tasks are complete.
-if tfidf and model:
+if tfidf and model and scaler:
     st.success("App is ready! Try entering a message.")
