@@ -7,6 +7,18 @@ from nltk.stem.porter import PorterStemmer
 from scipy.sparse import hstack
 import re
 
+# --- NLTK Downloads (required for first run) ---
+# This will download the necessary data if not already present.
+try:
+    nltk.data.find('corpora/stopwords')
+except:
+    nltk.download('stopwords')
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except:
+    nltk.download('punkt')
+
 ps = PorterStemmer()
 
 
