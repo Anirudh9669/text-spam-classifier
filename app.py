@@ -16,7 +16,7 @@ except nltk.downloader.DownloadError:
         nltk.download('stopwords', quiet=True)
         nltk.download('punkt', quiet=True)
 
-ps = PorterStemter()
+ps = PorterStemmer()
 
 
 def transform_text(text):
