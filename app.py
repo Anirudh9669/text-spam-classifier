@@ -7,14 +7,16 @@ from nltk.stem.porter import PorterStemmer
 from scipy.sparse import hstack
 import re
 
-# --- NLTK Downloads (required for first run) ---
-# This ensures that the necessary data is downloaded in the Streamlit Cloud environment.
+# This ensures that the necessary NLTK data is downloaded in the Streamlit Cloud environment.
 # It only runs once when the app is first deployed or when a new version is pushed.
-with st.spinner('Downloading necessary data...'):
-    nltk.download('stopwords', quiet=True)
-    nltk.download('punkt', quiet=True)
+try:
+    nltk.data.find('corpora/stopwords')
+except nltk.downloader.DownloadError:
+    with st.spinner('Downloading necessary data...'):
+        nltk.download('stopwords', quiet=True)
+        nltk.download('punkt', quiet=True)
 
-ps = PorterStemmer()
+ps = PorterStemter()
 
 
 def transform_text(text):
