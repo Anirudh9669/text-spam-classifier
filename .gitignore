@@ -1,6 +1,8 @@
-This file tells Git which files and folders to ignore.
 The virtual environment folder
 .venv/
+
+PyCharm-specific folder
+.idea/
 
 Python-specific files and folders
 pycache/
