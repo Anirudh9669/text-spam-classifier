@@ -7,17 +7,20 @@ from nltk.stem.porter import PorterStemmer
 from scipy.sparse import hstack
 import re
 
-# This block ensures that the necessary NLTK data is downloaded.
-# It is placed at the very top to guarantee the data is available before
-# any functions that use it are called. This is the most reliable method
-# for Streamlit deployment.
-with st.spinner('Downloading necessary data for NLTK...'):
+# A one-stop solution to ensure NLTK data is downloaded.
+# This block is at the very top of the script to guarantee
+# the data is available before any other functions are called.
+with st.spinner('Downloading necessary NLTK data... This may take a moment.'):
     try:
-        nltk.data.find('corpora/stopwords')
+        # Check if the 'punkt' and 'stopwords' resources are already available
         nltk.data.find('tokenizers/punkt')
-    except:
-        nltk.download('stopwords', quiet=True)
+        nltk.data.find('corpora/stopwords')
+        st.success("NLTK data is already downloaded!")
+    except nltk.downloader.DownloadError:
+        # If not found, download both resources
         nltk.download('punkt', quiet=True)
+        nltk.download('stopwords', quiet=True)
+        st.success("NLTK data downloaded successfully!")
 
 ps = PorterStemmer()
 
