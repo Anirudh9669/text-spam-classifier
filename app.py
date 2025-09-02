@@ -2,24 +2,28 @@ import streamlit as st
 import pickle
 import string
 import nltk
+import os
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from scipy.sparse import hstack
 import re
 
+# Set a custom NLTK data path that is writable
+nltk_data_path = "nltk_data"
+if nltk_data_path not in nltk.data.path:
+    nltk.data.path.append(nltk_data_path)
+
 # A one-stop solution to ensure NLTK data is downloaded.
-# This block is at the very top of the script to guarantee
-# the data is available before any other functions are called.
 with st.spinner('Downloading necessary NLTK data... This may take a moment.'):
     try:
         # Check if the 'punkt' and 'stopwords' resources are already available
         nltk.data.find('tokenizers/punkt')
         nltk.data.find('corpora/stopwords')
         st.success("NLTK data is already downloaded!")
-    except nltk.downloader.DownloadError:
-        # If not found, download both resources
-        nltk.download('punkt', quiet=True)
-        nltk.download('stopwords', quiet=True)
+    except:
+        # If not found, download both resources to the custom path
+        nltk.download('punkt', download_dir=nltk_data_path, quiet=True)
+        nltk.download('stopwords', download_dir=nltk_data_path, quiet=True)
         st.success("NLTK data downloaded successfully!")
 
 ps = PorterStemmer()
