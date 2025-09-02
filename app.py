@@ -7,12 +7,15 @@ from nltk.stem.porter import PorterStemmer
 from scipy.sparse import hstack
 import re
 
-# This ensures that the necessary NLTK data is downloaded in the Streamlit Cloud environment.
-# It only runs once when the app is first deployed or when a new version is pushed.
-try:
-    nltk.data.find('corpora/stopwords')
-except nltk.downloader.DownloadError:
-    with st.spinner('Downloading necessary data...'):
+# This block ensures that the necessary NLTK data is downloaded.
+# It is placed at the very top to guarantee the data is available before
+# any functions that use it are called. This is the most reliable method
+# for Streamlit deployment.
+with st.spinner('Downloading necessary data for NLTK...'):
+    try:
+        nltk.data.find('corpora/stopwords')
+        nltk.data.find('tokenizers/punkt')
+    except:
         nltk.download('stopwords', quiet=True)
         nltk.download('punkt', quiet=True)
 
